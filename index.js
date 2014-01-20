@@ -6,6 +6,13 @@ var parseUrl = require('url').parse;
 var domain = require('domain');
 
 var exports = module.exports = function(routes) {
+    for(var key in routes) {
+        if(/\/$/.test(key)) {
+            routes[key.replace(/\/$/, '')] = routes[key];
+        } else {
+            routes[key + '/'] = routes[key]
+        }
+    }
 	var beforeHandler, afterHandler;
 	var server = http.createServer(function(req, res) {
 		var d = domain.create();
@@ -23,7 +30,6 @@ var exports = module.exports = function(routes) {
 				afterHandler(req, res);
 			});
 			var key = (method == 'get') ? urlinfo.pathname : (method + ':' + urlinfo.pathname);
-			key = key.replace(/\/$/, '');
 			var route = routes[key] || routes['404'];
 			if(route) {
 				route(req, res);
