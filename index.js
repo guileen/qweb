@@ -5,14 +5,62 @@ var http = require('http');
 var parseUrl = require('url').parse;
 var domain = require('domain');
 
+function default404(req, res) {
+    res.writeHead(404);
+    res.end('Oops, 404 not found.');
+}
+
 var exports = module.exports = function(routes) {
+    var regexRoutes = [];
+    // init routes and regexRoutes
     for(var key in routes) {
-        if(/\/$/.test(key)) {
-            routes[key.replace(/\/$/, '')] = routes[key];
+        var fn = routes[key];
+        // if not "get:/foo/bar" but "/foo/bar"
+        if(!/\w+:.*/.test(key)) {
+            delete routes[key];
+            key = 'get:'+key;
+            routes[key] = fn;
+        }
+        if(~key.indexOf('*') || ~key.indexOf('/:')) {
+            // /foo/*
+            // /foo/:bar
+            var names = [];
+            var regex = key.replace(/\/(?:([^:\/]+)|\:([^\/]+))/g, function(full, normal, name){
+                    if(normal) return full;
+                    names.push(name);
+                    return '/(.+?)';
+            }).replace(/\*/g, '(.*?)').replace(/\//g, '\\/');
+            regexRoutes.push([new RegExp('^' + regex + '$'), names, fn]);
+            delete routes[key];
         } else {
-            routes[key + '/'] = routes[key]
+            // post:/foo/bar
+            if(/\/$/.test(key)) {
+                routes[key.replace(/\/$/, '')] = fn;
+            } else {
+                routes[key + '/'] = fn;
+            }
         }
     }
+
+    function matchRegexRoutes(key, req){
+        for (var i = 0, l = regexRoutes.length; i < l; i ++) {
+            var v = regexRoutes[i];
+            var match = key.match(v[0])
+              , names = v[1]
+              ;
+            if(match) {
+                req.params = {};
+                for (var j = 1, l = match.length; j < l; j ++) {
+                    var name = names[j - 1];
+                    var str = match[j];
+                    req.params[j] = str;
+                    if(name) req.params[name] = str;
+                }
+                return v[2];
+            }
+        }
+    }
+
 	var beforeHandler, afterHandler;
 	var server = http.createServer(function(req, res) {
 		var d = domain.create();
@@ -29,14 +77,9 @@ var exports = module.exports = function(routes) {
 			afterHandler && res.on('finish', function(){
 				afterHandler(req, res);
 			});
-			var key = (method == 'get') ? urlinfo.pathname : (method + ':' + urlinfo.pathname);
-			var route = routes[key] || routes['404'];
-			if(route) {
-				route(req, res);
-			} else {
-				res.writeHead(404);
-				res.end('Oops, 404 not found.');
-			}
+			var key = method + ':' + urlinfo.pathname;
+            var route = routes[key] || matchRegexRoutes(key, req) || routes['404'] || default404;
+            route(req, res);
 		})
 	});
 

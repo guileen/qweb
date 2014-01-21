@@ -1,10 +1,10 @@
 {
   "name": "qweb",
-  "version": "0.1.0",
-  "description": "A very simple web framework",
+  "version": "0.1.1",
+  "description": "A very simple http route framework",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/test.js"
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,7 @@
   "bugs": {
     "url": "https://github.com/guileen/qweb/issues"
   },
-  "homepage": "https://github.com/guileen/qweb"
+  "homepage": "https://github.com/guileen/qweb",
+  "dependencies": {
+  }
 }

@@ -15,7 +15,7 @@ qweb.req.query = function() {
 }
 
 var server = qweb({
-	'/foo' : function(req, res){
+	'/foo/*' : function(req, res){
 		var query = req.query();
         res.json({hello: 'world'})
     }, 
