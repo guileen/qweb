@@ -1,6 +1,7 @@
 var qweb = require('../index');
+var domain = require('domain');
+var mock = qweb.mock();
 var assert = require('assert');
-var mock = require('./mock');
 
 var server = qweb({
         '/foo/bar': function (req, res) {
@@ -25,8 +26,44 @@ var server = qweb({
         throw err;
 });
 
+process.on('uncaughtException', function(err) {
+        console.log(err.stack);
+        process.exit(1);
+})
+
+var exitCode = 0;
+process.on('exit', function(err) {
+        process.exit(exitCode || err);
+})
+
+function asyncTest (msg, fn) {
+    var gotError = false;
+    var timer = setTimeout(function() {
+            throw new Error('Timeout(2000ms)');
+    }, 2000);
+    function done(err) {
+        if(err) {
+            exitCode = 1;
+            console.error(err.stack || err);
+            console.log('FAIL', msg);
+        } else {
+            console.log('SUCCESS', msg);
+        }
+        clearTimeout(timer);
+    }
+    var d = domain.create();
+    d.add(timer);
+    d.on('error', function(err) {
+            done(err);
+    })
+    d.run(function() {
+            process.nextTick(function(){
+                    fn(done);
+            })
+    })
+}
 function request(req, expectResponse) {
-    mock.test(req.method + ':' + req.url, function(done) {
+    asyncTest(req.method + ':' + req.url, function(done) {
             var res = mock.response();
             res.on('finish', function(){
                     try{
