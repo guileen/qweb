@@ -15,6 +15,7 @@
     "router",
     "framework"
   ],
+  "engine": ">=0.10",
   "author": "Jason Gui",
   "license": "MIT",
   "bugs": {
