@@ -63,13 +63,13 @@ var exports = module.exports = function(routes) {
 
 	var beforeHandler, afterHandler;
 	var server = http.createServer(function(req, res) {
-		// var d = domain.create();
-		// d.on('error', function(err) {
-		// 	server.emit('domainError', err, req, res);
-		// })
-		// d.add(req);
-		// d.add(res);
-		// d.run(function() {
+		var d = domain.create();
+		d.on('error', function(err) {
+			server.emit('domainError', err, req, res);
+		})
+		d.add(req);
+		d.add(res);
+		d.run(function() {
 			var method = req.method.toLowerCase();
 			var urlinfo = parseUrl(req.url, true);
 			req.urlinfo = urlinfo;
@@ -80,7 +80,7 @@ var exports = module.exports = function(routes) {
 			var key = method + ':' + urlinfo.pathname;
             var route = routes[key] || matchRegexRoutes(key, req) || routes['404'] || default404;
             route(req, res);
-		// })
+		})
 	});
 
 	server.before = function(_beforeHandler) {

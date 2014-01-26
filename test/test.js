@@ -3,6 +3,7 @@ var domain = require('domain');
 var mock = qweb.mock();
 var assert = require('assert');
 
+var caughtError = null;
 var server = qweb({
         '/foo/bar': function (req, res) {
             res.end('/foo/bar');
@@ -22,8 +23,16 @@ var server = qweb({
       , 'post:/bar/:id': function(req, res) {
             res.end('post:/bar/:id id=' + req.params.id);
         }
+      , '/throw-error': function(req, res) {
+            setTimeout(function(){
+                    var err = new Error('fake error');
+                    err.code = 'FAKE';
+                    throw err;
+            }, 50)
+        }
 }).on('domainError', function(err, req, res){
-        throw err;
+        caughtError = err;
+        res.end('500 server internal error');
 });
 
 process.on('uncaughtException', function(err) {
@@ -44,14 +53,14 @@ function asyncTest (msg, fn) {
     function done(err) {
         if(err) {
             exitCode = 1;
-            console.error(err.stack || err);
+            console.error('FAIL with', err.stack || err);
             console.log('FAIL', msg);
         } else {
             console.log('SUCCESS', msg);
         }
         clearTimeout(timer);
     }
-    var d = domain.create();
+    var d = mock.createDomain();
     d.add(timer);
     d.on('error', function(err) {
             done(err);
@@ -62,13 +71,13 @@ function asyncTest (msg, fn) {
             })
     })
 }
-function request(req, expectResponse) {
+function request(req, expectResponse, callback) {
     asyncTest(req.method + ':' + req.url, function(done) {
             var res = mock.response();
             res.on('finish', function(){
                     try{
                         assert.equal(res.sentcontent, expectResponse);
-                        done();
+                        callback ? callback(done) : done();
                     } catch(e) {
                         done(e);
                     }
@@ -77,14 +86,15 @@ function request(req, expectResponse) {
     })
 }
 
-function get(url, expectResponse) {
-    request(mock.request(url, 'GET'), expectResponse);
+function get(url, expectResponse, callback) {
+    request(mock.request(url, 'GET'), expectResponse, callback);
 };
 
-function post(url, expectResponse) {
-    request(mock.request(url, 'POST'), expectResponse);
+function post(url, expectResponse, callback) {
+    request(mock.request(url, 'POST'), expectResponse, callback);
 }
 
+mock.disableDomain();
 get('/foo/bar', '/foo/bar');
 post('/foo/bar', 'post:/foo/bar/');
 get('/foo/1234', '/foo/*:1234');
@@ -92,3 +102,8 @@ post('/foo/1234', 'post:/foo/*:1234');
 get('/bar/1234', '/bar/:id id=1234');
 post('/bar/1234', 'post:/bar/:id id=1234');
 get('/blabla', 'Oops, 404 not found.');
+mock.enableDomain();
+get('/throw-error', '500 server internal error', function(done) {
+        assert.equal(caughtError.code, 'FAKE');
+        done();
+});

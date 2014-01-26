@@ -46,3 +46,22 @@ exports.response = function() {
 
 exports.MockRequest = MockRequest;
 exports.MockResponse = MockResponse;
+
+var domain = require('domain');
+var rawCreate = domain.create;
+exports.createDomain = rawCreate;
+exports.disableDomain = function () {
+    domain.create = function () {
+        return {
+            add: noop
+          , on: noop
+          , run: function(fn) {fn()}
+        }
+    }
+}
+
+exports.enableDomain = function enableDomain() {
+    domain.create = function() {
+        return rawCreate();
+    };
+}
