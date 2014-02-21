@@ -88,6 +88,7 @@ var exports = module.exports = function(routes) {
         d.run(function() {
             var method = req.method.toLowerCase();
             var urlinfo = parseUrl(req.url, true);
+            req.query = urlinfo.query;
             req.urlinfo = urlinfo;
             beforeHandler && beforeHandler(req, res);
             afterHandler && res.on('finish', function(){
