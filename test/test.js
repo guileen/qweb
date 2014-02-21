@@ -23,6 +23,9 @@ var server = qweb({
       , 'post:/bar/:id': function(req, res) {
             res.end('post:/bar/:id id=' + req.params.id);
         }
+      , '/verb/get': function(req, res) {
+            res.end('should not get this');
+        }
       , '/throw-error': function(req, res) {
             setTimeout(function(){
                     var err = new Error('fake error');
@@ -39,6 +42,14 @@ process.on('uncaughtException', function(err) {
         console.log(err.stack);
         process.exit(1);
 })
+
+server.get('/verb/get', function(req, res) {
+        res.end('/verb/get');
+});
+
+server.post('/verb/post', function(req, res) {
+        res.end('/verb/post');
+});
 
 var exitCode = 0;
 process.on('exit', function(err) {
@@ -95,6 +106,8 @@ function post(url, expectResponse, callback) {
 }
 
 mock.disableDomain();
+get('/verb/get', '/verb/get');
+post('/verb/post', '/verb/post');
 get('/foo/bar', '/foo/bar');
 post('/foo/bar', 'post:/foo/bar/');
 get('/foo/1234', '/foo/*:1234');

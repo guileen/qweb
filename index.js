@@ -12,15 +12,24 @@ function default404(req, res) {
 
 var exports = module.exports = function(routes) {
     var regexRoutes = [];
-    // init routes and regexRoutes
+    process.nextTick(function(){
+            // init routes and regexRoutes
+            for(var key in routes) {
+                addRegexRoute(key, routes[key]);
+            }
+    })
+
     for(var key in routes) {
-        var fn = routes[key];
         // if not "get:/foo/bar" but "/foo/bar"
         if(!/\w+:.*/.test(key)) {
+            var fn = routes[key];
             delete routes[key];
             key = 'get:'+key;
             routes[key] = fn;
         }
+    }
+
+    function addRegexRoute(key, fn) {
         if(~key.indexOf('*') || ~key.indexOf('/:')) {
             // /foo/*
             // /foo/:bar
@@ -40,6 +49,12 @@ var exports = module.exports = function(routes) {
                 routes[key + '/'] = fn;
             }
         }
+    }
+
+    function defineRoute(method, path, fn) {
+        var key = method + ':' + path;
+        routes[key] = fn;
+        addRegexRoute(key, fn);
     }
 
     function matchRegexRoutes(key, req){
@@ -92,6 +107,41 @@ var exports = module.exports = function(routes) {
 		afterHandler = _afterHandler;
 		return server;
 	}
+    ;[
+        'acl'
+      , 'aseline-control'
+      , 'checkin'
+      , 'checkout'
+      , 'connect'
+      , 'copy'
+      , 'delete'
+      , 'get'
+      , 'head'
+      , 'label'
+      , 'lock'
+      , 'merge'
+      , 'mkactivity'
+      , 'mkcol'
+      , 'mkworkspace'
+      , 'move'
+      , 'options'
+      , 'orderpatch'
+      , 'patch'
+      , 'post'
+      , 'propfind'
+      , 'proppatch'
+      , 'put'
+      , 'report'
+      , 'search'
+      , 'trace'
+      , 'uncheckout'
+      , 'unlock'
+      , 'update'
+      , 'version-control'].forEach(function(verb) {
+            server[verb] = function(path, fn) {
+                defineRoute(verb, path, fn);
+            }
+    });
 	return server;
 }
 // req.urlinfo  see url.parse
