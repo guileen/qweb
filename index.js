@@ -140,6 +140,7 @@ var exports = module.exports = function(routes) {
       , 'version-control'].forEach(function(verb) {
             server[verb] = function(path, fn) {
                 defineRoute(verb, path, fn);
+                return server;
             }
     });
     return server;

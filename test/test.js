@@ -36,20 +36,16 @@ var server = qweb({
 }).on('domainError', function(err, req, res){
         caughtError = err;
         res.end('500 server internal error');
+}).get('/verb/get', function(req, res) {
+        res.end('/verb/get');
+}).post('/verb/post', function(req, res) {
+        res.end('/verb/post');
 });
-
 process.on('uncaughtException', function(err) {
         console.log(err.stack);
         process.exit(1);
 })
 
-server.get('/verb/get', function(req, res) {
-        res.end('/verb/get');
-});
-
-server.post('/verb/post', function(req, res) {
-        res.end('/verb/post');
-});
 
 var exitCode = 0;
 process.on('exit', function(err) {
