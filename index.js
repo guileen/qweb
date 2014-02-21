@@ -11,6 +11,7 @@ function default404(req, res) {
 }
 
 var exports = module.exports = function(routes) {
+    routes = routes || {};
     var regexRoutes = [];
     process.nextTick(function(){
             // init routes and regexRoutes
