@@ -17,6 +17,9 @@ var server = qweb({
       , 'post:/foo/*': function(req, res) {
             res.end('post:/foo/*:' + req.params[1]);
         }
+      , 'post:/postonly/*': function(req, res) {
+            res.end('post:/postonly/*:' + req.params[1]);
+        }
       , '/bar/:id': function(req, res) {
             res.end('/bar/:id id=' + req.params.id);
         }
@@ -104,10 +107,13 @@ function post(url, expectResponse, callback) {
 mock.disableDomain();
 get('/verb/get', '/verb/get');
 post('/verb/post', '/verb/post');
+get('/verb/post', 'Oops, 404 not found.');
 get('/foo/bar', '/foo/bar');
 post('/foo/bar', 'post:/foo/bar/');
 get('/foo/1234', '/foo/*:1234');
 post('/foo/1234', 'post:/foo/*:1234');
+post('/postonly/1234', 'post:/postonly/*:1234');
+get('/postonly/1234', 'Oops, 404 not found.');
 get('/bar/1234', '/bar/:id id=1234');
 post('/bar/1234', 'post:/bar/:id id=1234');
 get('/blabla', 'Oops, 404 not found.');
