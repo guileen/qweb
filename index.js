@@ -81,7 +81,8 @@ var exports = module.exports = function(routes) {
     var server = http.createServer(function(req, res) {
         var d = domain.create();
         d.on('error', function(err) {
-            server.emit('domainError', err, req, res);
+                console.error('uncaughtError of ', req.method, req.url, req.headers, err.stack || err);
+                server.emit('domainError', err, req, res);
         })
         d.add(req);
         d.add(res);
