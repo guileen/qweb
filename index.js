@@ -69,7 +69,7 @@ var exports = module.exports = function(routes) {
                 for (var j = 1, l = match.length; j < l; j ++) {
                     var name = names[j - 1];
                     var str = match[j];
-                    req.params[j] = str;
+                    req.params[j - 1] = str;
                     if(name) req.params[name] = str;
                 }
                 return v[2];

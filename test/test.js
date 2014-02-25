@@ -12,13 +12,13 @@ var server = qweb({
             res.end('post:/foo/bar/');
         }
       , '/foo/*': function(req, res) {
-            res.end('/foo/*:' + req.params[1]);
+            res.end('/foo/*:' + req.params[0]);
         }
       , 'post:/foo/*': function(req, res) {
-            res.end('post:/foo/*:' + req.params[1]);
+            res.end('post:/foo/*:' + req.params[0]);
         }
       , 'post:/postonly/*': function(req, res) {
-            res.end('post:/postonly/*:' + req.params[1]);
+            res.end('post:/postonly/*:' + req.params[0]);
         }
       , '/bar/:id': function(req, res) {
             res.end('/bar/:id id=' + req.params.id);
