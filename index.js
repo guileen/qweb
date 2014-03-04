@@ -91,6 +91,8 @@ var exports = module.exports = function(routes) {
             var urlinfo = parseUrl(req.url, true);
             req.query = urlinfo.query || {};
             req.urlinfo = urlinfo;
+            req.res = res;
+            res.req = req;
             beforeHandler && beforeHandler(req, res);
             afterHandler && res.on('finish', function(){
                 afterHandler(req, res);
