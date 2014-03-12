@@ -32,8 +32,8 @@ var exports = module.exports = function(routes) {
 
     function addRegexRoute(key, fn) {
         if(~key.indexOf('*') || ~key.indexOf('/:')) {
-            // /foo/*
-            // /foo/:bar
+            // get:/foo/*
+            // post:/foo/:bar
             var names = [];
             var regex = key.replace(/\/(?:([^:\/]+)|\:([^\/]+))/g, function(full, normal, name){
                     if(normal) return full;
