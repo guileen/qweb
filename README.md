@@ -57,13 +57,16 @@ qweb().get('/foo/*', function(req, res) {
 });
 ```
 
-## request.query
+## req.query
 
 ```js
 qweb().get('/foo', function(req, res) {
     console.log(req.query);
 });
 ```
+
+## req.res
+## res.req
 
 ## server.before(function(req, res))
 
