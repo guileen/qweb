@@ -53,6 +53,7 @@ var exports = module.exports = function(routes) {
     }
 
     function defineRoute(method, path, fn) {
+        if(!fn) throw new Error('route handler is undefined, method:' + method + ', path:' + path);
         var key = method + ':' + path;
         routes[key] = fn;
         addRegexRoute(key, fn);
